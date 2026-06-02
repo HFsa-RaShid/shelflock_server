@@ -1,0 +1,32 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    // File Layout
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    "module": "nodenext",
+    "target": "esnext",
+    // "strict": true,
+    "esModuleInterop": true,
+    "ignoreDeprecations": "6.0",
+    "forceConsistentCasingInFileNames": true,
+
+    // Other Outputs
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    "strict": true,
+    "skipLibCheck": true,
+    
+    // 🚨 এই নিচের লাইনটি যুক্ত করুন (অবশ্যই আগের লাইনের শেষে কমা দিবেন)
+    "types": ["node"] 
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "prisma.config.ts.bnk"]
+}

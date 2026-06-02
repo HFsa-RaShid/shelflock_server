@@ -1,0 +1,43 @@
+datasource db {
+  provider = "postgresql" 
+  
+
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+model Merchant {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  stores    Store[]   
+}
+
+
+model Store {
+  id         String    @id @default(uuid())
+  name       String    
+  phone      String    
+  createdAt  DateTime  @default(now())
+  merchantId String
+  merchant   Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  products   Product[]
+}
+
+
+model Product {
+  id              String   @id @default(uuid())
+  title           String
+  quantity        Int
+  expiryDate      DateTime
+  alertDaysBefore Int      @default(7)
+  isAlerted       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  storeId         String?
+  store           Store?    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+}

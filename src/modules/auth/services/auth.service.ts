@@ -1,0 +1,70 @@
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { getPrisma } from '../../../config/prisma.js';
+import { IMerchantLoginInput, IMerchantRegisterInput } from '../interfaces/auth.interface.js';
+
+export class AuthService {
+  private prisma = getPrisma();
+  private JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
+
+  // 📝 রেজিস্ট্রেশন লজিক
+  async register(data: IMerchantRegisterInput) {
+    // ইমেইল ইতিমধ্যে ডাটাবেজে আছে কিনা চেক
+    const existingMerchant = await this.prisma.merchant.findUnique({
+      where: { email: data.email },
+    });
+
+    if (existingMerchant) {
+      throw new Error('এই ইমেইলটি দিয়ে ইতিমধ্যে অ্যাকাউন্ট খোলা হয়েছে!');
+    }
+
+    // পাসওয়ার্ড হ্যাশ করা
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    // ডাটাবেজে মার্চেন্ট তৈরি
+    const newMerchant = await this.prisma.merchant.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        password: hashedPassword,
+      },
+    });
+
+    const { password, ...merchantWithoutPassword } = newMerchant;
+    return merchantWithoutPassword;
+  }
+
+  // 🔑 লগইন লজিক
+  async login(data: IMerchantLoginInput) {
+    // মার্চেন্ট চেক
+    const merchant = await this.prisma.merchant.findUnique({
+      where: { email: data.email },
+    });
+
+    if (!merchant) {
+      throw new Error('ভুল ইমেইল অথবা পাসওয়ার্ড!');
+    }
+
+    // পাসওয়ার্ড ম্যাচিং
+    const isPasswordMatch = await bcrypt.compare(data.password, merchant.password);
+    if (!isPasswordMatch) {
+      throw new Error('ভুল ইমেইল অথবা পাসওয়ার্ড!');
+    }
+
+    // JWT টোকেন তৈরি (মেয়াদ ৭ দিন)
+    const token = jwt.sign(
+      { id: merchant.id, email: merchant.email },
+      this.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    return {
+      token,
+      merchant: {
+        id: merchant.id,
+        name: merchant.name,
+        email: merchant.email,
+      },
+    };
+  }
+}
