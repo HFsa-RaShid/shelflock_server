@@ -22,16 +22,17 @@ model Merchant {
 }
 
 model Store {
-  id         String     @id @default(uuid())
+  id         String      @id @default(uuid())
   name       String
   phone      String
-  createdAt  DateTime   @default(now())
+  createdAt  DateTime    @default(now())
   merchantId String
-  merchant   Merchant   @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchant   Merchant    @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   products   Product[]
   categories Category[]
+  alertRule  AlertRule?
 
-  @@index([merchantId]) // merchantId দিয়ে দ্রুত সার্চ করার জন্য
+  @@index([merchantId])
 }
 
 model Category {
@@ -46,7 +47,7 @@ model Category {
   products    Product[]
 
   @@unique([name, storeId])
-  @@index([storeId]) // storeId দিয়ে ক্যাটাগরি ফিল্টার করার জন্য
+  @@index([storeId])
   @@map("categories")
 }
 
@@ -57,7 +58,7 @@ model Product {
   lotNumber       String?
   expiryDate      DateTime
   alertDaysBefore Int       @default(7)
-  isAlerted       Boolean   @default(false)
+  lastAlertedDay  Int?      // 👈 মাল্টিপল অ্যালার্ট ট্র্যাক করার জন্য (যেমন: ৩০ দিন আগে অ্যালার্ট পাঠানো হলে এখানে ৩০ সেভ হবে)
   createdAt       DateTime  @default(now())
   storeId         String?
   store           Store?    @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -66,4 +67,16 @@ model Product {
 
   @@index([storeId])    
   @@index([categoryId]) 
+}
+
+model AlertRule {
+  id              String   @id @default(uuid())
+  storeId         String   @unique
+  store           Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  intervals       Int[]    // ফ্রন্টএন্ডের সিলেক্ট করা দিনগুলো যেমন: [30, 7, 3]
+  customMessage   String   // কাস্টম মেসেজ টেমপ্লেট
+  whatsappNumber  String?  // 👈 ফ্রন্টএন্ড থেকে পাঠানো ডায়নামিক নম্বর ("88018XXXXXXXX")
+  channels        String[] // ["In-App Notification", "Email Dispatch", "WhatsApp Alert"]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
