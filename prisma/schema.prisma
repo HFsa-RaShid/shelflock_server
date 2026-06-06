@@ -1,6 +1,5 @@
 datasource db {
-  provider = "postgresql" 
-  
+  provider = "postgresql"
 
 }
 
@@ -8,36 +7,63 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum Status {
+  Active
+  Inactive
+}
 
 model Merchant {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
   name      String
-  email     String    @unique
+  email     String   @unique
   password  String
-  createdAt DateTime  @default(now())
-  stores    Store[]   
+  createdAt DateTime @default(now())
+  stores    Store[]
 }
-
 
 model Store {
-  id         String    @id @default(uuid())
-  name       String    
-  phone      String    
-  createdAt  DateTime  @default(now())
+  id         String     @id @default(uuid())
+  name       String
+  phone      String
+  createdAt  DateTime   @default(now())
   merchantId String
-  merchant   Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchant   Merchant   @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   products   Product[]
+  categories Category[]
+
+  @@index([merchantId]) // merchantId দিয়ে দ্রুত সার্চ করার জন্য
 }
 
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  description String?   @default("")
+  status      Status    @default(Active)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  storeId     String
+  store       Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  products    Product[]
+
+  @@unique([name, storeId])
+  @@index([storeId]) // storeId দিয়ে ক্যাটাগরি ফিল্টার করার জন্য
+  @@map("categories")
+}
 
 model Product {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   title           String
   quantity        Int
+  lotNumber       String?
   expiryDate      DateTime
-  alertDaysBefore Int      @default(7)
-  isAlerted       Boolean  @default(false)
-  createdAt       DateTime @default(now())
+  alertDaysBefore Int       @default(7)
+  isAlerted       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
   storeId         String?
   store           Store?    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  categoryId      String?
+  category        Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([storeId])    
+  @@index([categoryId]) 
 }

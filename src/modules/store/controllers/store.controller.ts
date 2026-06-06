@@ -1,58 +1,82 @@
-import { Response } from 'express';
-import { IAuthRequest } from '../../auth/interfaces/auth.interface.js';
+// src/modules/store/controllers/store.controller.ts
+import { Request, Response } from 'express';
 import { StoreService } from '../services/store.service.js';
 
+// ১. স্টোর তৈরি করার কন্ট্রোলার (আপাতত টোকেন ছাড়া টেস্ট করার জন্য)
+const createStore = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { name, phone, merchantId } = req.body;
 
-const storeService = new StoreService();
-
-export class StoreController {
-  // 🏪 স্টোর তৈরি করার কন্ট্রোলার
-  async createStore(req: IAuthRequest, res: Response): Promise<void> {
-    try {
-      const { name, phone } = req.body;
-      const merchantId = req.merchant?.id; // 👈 মিডলওয়্যার থেকে মার্চেন্ট আইডি নেওয়া হলো
-
-      if (!merchantId) {
-        res.status(401).json({ success: false, message: 'অননুমোদিত রিকোয়েস্ট, দয়া করে আবার লগইন করুন।' });
-        return;
-      }
-
-      if (!name || !phone) {
-        res.status(400).json({ success: false, message: 'স্টোরের নাম এবং ফোন নম্বর দেওয়া আবশ্যিক!' });
-        return;
-      }
-
-      const result = await storeService.createStore({ name, phone, merchantId });
-      
-      res.status(201).json({
-        success: true,
-        message: 'অভিনন্দন! আপনার স্টোরটি সফলভাবে তৈরি হয়েছে।',
-        data: result,
-      });
-    } catch (error: any) {
-      res.status(500).json({ success: false, message: error.message });
+    if (!merchantId) {
+      res.status(400).json({ success: false, message: 'Merchant ID is required for testing!' });
+      return;
     }
-  }
 
-  // 📋 মার্চেন্টের সব স্টোর দেখার কন্ট্রোলার
-  async getMyStores(req: IAuthRequest, res: Response): Promise<void> {
-    try {
-      const merchantId = req.merchant?.id;
-
-      if (!merchantId) {
-        res.status(401).json({ success: false, message: 'লগইন সেশন শেষ হয়ে গেছে!' });
-        return;
-      }
-
-      const result = await storeService.getMerchantStores(merchantId);
-      
-      res.status(200).json({
-        success: true,
-        message: 'স্টোর লিস্ট সফলভাবে পাওয়া গেছে।',
-        data: result,
-      });
-    } catch (error: any) {
-      res.status(500).json({ success: false, message: error.message });
+    if (!name || !phone) {
+      res.status(400).json({ success: false, message: 'স্টোরের নাম এবং ফোন নম্বর দেওয়া আবশ্যিক!' });
+      return;
     }
+
+    const result = await StoreService.createStoreInDB({ name, phone, merchantId });
+    
+    res.status(201).json({
+      success: true,
+      message: 'অভিনন্দন! আপনার স্টোরটি সফলভাবে তৈরি হয়েছে।',
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
   }
-}
+};
+
+// ২. মার্চেন্টের সব স্টোর দেখার কন্ট্রোলার
+const getMyStores = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // GET রিকোয়েস্টে কোয়েরি অথবা বডি থেকে merchantId নিচ্ছি
+    const merchantId = (req.query.merchantId as string) || req.body.merchantId;
+
+    if (!merchantId) {
+      res.status(400).json({ success: false, message: 'Merchant ID পাওয়া যায়নি!' });
+      return;
+    }
+
+    const result = await StoreService.getMerchantStoresFromDB(merchantId);
+    
+    res.status(200).json({
+      success: true,
+      message: 'স্টোর লিস্ট সফলভাবে পাওয়া গেছে।',
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ৩. স্টোর আপডেট করার কন্ট্রোলার
+const updateStore = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const result = await StoreService.updateStoreInDB(id as string, req.body);
+    res.status(200).json({ success: true, message: 'Store updated successfully', data: result });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ৪. স্টোর ডিলিট করার কন্ট্রোলার
+const deleteStore = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    await StoreService.deleteStoreFromDB(id as string);
+    res.status(200).json({ success: true, message: 'Store deleted successfully' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const StoreController = {
+  createStore,
+  getMyStores,
+  updateStore,
+  deleteStore,
+};

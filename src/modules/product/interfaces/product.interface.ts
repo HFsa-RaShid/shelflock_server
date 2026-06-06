@@ -1,7 +1,18 @@
 export interface IProductInput {
   title: string;
   quantity: number;
-  expiryDate: string;
+  lotNumber: string;
+  expiryDate: string | Date;
   alertDaysBefore?: number;
-  merchantId: string;
+  storeId: string;     
+  categoryId?: string;   
+}
+
+export interface IProductUpdateInput {
+  title?: string;
+  quantity?: number;
+  expiryDate?: string | Date;
+  alertDaysBefore?: number;
+  categoryId?: string;
+  lotNumber?: string;
 }
