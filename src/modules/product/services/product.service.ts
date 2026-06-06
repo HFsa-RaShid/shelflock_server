@@ -10,7 +10,7 @@ const createProductIntoDB = async (data: IProductInput) => {
       lotNumber: data.lotNumber || null,
       quantity: Number(data.quantity),
       expiryDate: new Date(data.expiryDate),
-      alertDaysBefore: data.alertDaysBefore ? Number(data.alertDaysBefore) : 7,
+      alertDaysBefore: data.alertDaysBefore ? Number(data.alertDaysBefore) : 15,
       storeId: data.storeId,
       categoryId: data.categoryId || null, // ক্যাটাগরি না দিলে null সেট হবে
     },
