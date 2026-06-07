@@ -6,6 +6,7 @@ export interface IProductInput {
   alertDaysBefore?: number;
   storeId: string;     
   categoryId?: string;   
+  status?: 'Active' | 'Inactive'; 
 }
 
 export interface IProductUpdateInput {
@@ -15,4 +16,5 @@ export interface IProductUpdateInput {
   alertDaysBefore?: number;
   categoryId?: string;
   lotNumber?: string;
+  status?: 'Active' | 'Inactive'; 
 }

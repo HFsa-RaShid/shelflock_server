@@ -58,7 +58,8 @@ model Product {
   lotNumber       String?
   expiryDate      DateTime
   alertDaysBefore Int       @default(7)
-  lastAlertedDay  Int?      // 👈 মাল্টিপল অ্যালার্ট ট্র্যাক করার জন্য (যেমন: ৩০ দিন আগে অ্যালার্ট পাঠানো হলে এখানে ৩০ সেভ হবে)
+  lastAlertedDay  Int?   
+  status          Status    @default(Active)   
   createdAt       DateTime  @default(now())
   storeId         String?
   store           Store?    @relation(fields: [storeId], references: [id], onDelete: Cascade)

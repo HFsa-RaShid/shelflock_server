@@ -12,15 +12,16 @@ const createProductIntoDB = async (data: IProductInput) => {
       expiryDate: new Date(data.expiryDate),
       alertDaysBefore: data.alertDaysBefore ? Number(data.alertDaysBefore) : 15,
       storeId: data.storeId,
-      categoryId: data.categoryId || null, // ক্যাটাগরি না দিলে null সেট হবে
+      categoryId: data.categoryId || null,
+      status: data.status || 'Active',
     },
     include: {
-      category: { select: { name: true } }, // তৈরি করার পর রেসপন্সে ক্যাটাগরি নাম দেখাবে
+      category: { select: { name: true } }, 
     }
   });
 };
 
-// ২. Read All Products (নির্দিষ্ট স্টোরের জন্য ফিল্টারড)
+// ২. Read All Products 
 const getAllProductsFromDB = async (storeId: string) => {
   const prisma = getPrisma();
   return await prisma.product.findMany({
@@ -55,11 +56,12 @@ const getSingleProductFromDB = async (id: string) => {
 const updateProductInDB = async (id: string, data: IProductUpdateInput) => {
   const prisma = getPrisma();
   
-  // ডাইনামিকালি ডাটা ফরম্যাট রেডি করার জন্য
   const updateData: any = { ...data };
-  if (data.quantity) updateData.quantity = Number(data.quantity);
+  if (data.quantity !== undefined) updateData.quantity = Number(data.quantity);
   if (data.expiryDate) updateData.expiryDate = new Date(data.expiryDate);
   if (data.alertDaysBefore) updateData.alertDaysBefore = Number(data.alertDaysBefore);
+  
+  if (data.status) updateData.status = data.status; 
 
   return await prisma.product.update({
     where: { id },

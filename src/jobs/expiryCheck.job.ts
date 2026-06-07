@@ -149,10 +149,100 @@
 
 
 
+// import cron from 'node-cron';
+// import { getPrisma } from '../config/prisma.js';
+// import { sendWhatsAppMessage } from '../utils/whatsapp.js';
+
+
+// cron.schedule('* * * * *', async () => {
+//   const prisma = getPrisma();
+
+//   try {
+//     // ১. সকল স্টোর এবং তাদের আন্ডারে থাকা প্রোডাক্ট ও অ্যালার্ট রুলস তুলে আনা
+//     const stores = await prisma.store.findMany({
+//       include: {
+//         products: true,
+//         alertRule: true,
+//       },
+//     });
+
+//     const today = new Date();
+//     today.setHours(0, 0, 0, 0); 
+
+//     for (const store of stores) {
+//       const rule = store.alertRule;
+      
+//       // ওনার কনফিগারেশন সেট না করলে ডিফল্ট ইন্টারভাল [30, 7, 3] কাজ করবে
+//       const intervals = rule?.intervals || [30, 7, 3];
+      
+//       //  আপনার দেওয়া মেসেজ স্ট্রাকচারটি এখানে ডিফল্ট টেমপ্লেট হিসেবে সেট করা হয়েছে
+//       const messageTemplate = rule?.customMessage || 
+//         "আপনার প্রোডাক্ট *\"{product_name}\"* এর মেয়াদ {days_left} শেষ হতে যাচ্ছে। \n\nঅনুগ্রহ করে দ্রুত প্রয়োজনীয় ব্যবস্থা নিন!";
+      
+//       let targetWhatsAppNumber = rule?.whatsappNumber || '';
+//       targetWhatsAppNumber = targetWhatsAppNumber.replace('+', '').trim();
+
+//       // হোয়াটসঅ্যাপ নম্বর সেট করা না থাকলে স্টোরটি স্কিপ করবে
+//       if (!targetWhatsAppNumber) {
+//         continue;
+//       }
+
+//       for (const product of store.products) {
+//         const expiryDate = new Date(product.expiryDate);
+//         expiryDate.setHours(0, 0, 0, 0);
+
+//         // অবশিষ্টাংশ দিন হিসাব করা
+//         const diffTime = expiryDate.getTime() - today.getTime();
+//         const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+//         // প্রোডাক্ট অলরেডি এক্সপায়ার হয়ে গেলে স্কিপ
+//         if (daysRemaining <= 0) continue;
+
+//         // ২. চেক করা: আজকের দিনটি কি ওনারের সিলেক্ট করা ইন্টারভালের মধ্যে আছে?
+//         if (intervals.includes(daysRemaining)) {
+          
+//           // 🛡️ ডুপ্লিকেট মেসেজ সেফগার্ড
+//           if (product.lastAlertedDay === daysRemaining) {
+//             continue;
+//           }
+
+//           console.log(`⚠️ Expiry Milestone Match! '${product.title}' has exactly ${daysRemaining} days remaining.`);
+
+//           // ৩. দিন অনুযায়ী টেক্সট ডাইনামিক করা (১ দিন বাকি থাকলে "আগামীকাল", অন্যথায় "আর মাত্র X দিন")
+//           const dayText = daysRemaining === 1 ? "আগামীকাল" : `আর মাত্র ${daysRemaining} দিন পর`;
+//           const formattedDate = new Date(product.expiryDate).toLocaleDateString('bn-BD');
+          
+//           // প্লেসহোল্ডার রিপ্লেস করা
+//           let parsedMessage = messageTemplate
+//             .replace(/{product_name}/g, product.title)
+//             .replace(/{days_left}/g, dayText);
+            
+//           // ৪. আপনার চাওয়া হুবহু ফরম্যাটে চূড়ান্ত মেসেজ তৈরি (মেসেজ বডি + স্টক + এক্সপায়ারি ডেট)
+//           const finalMessage = `⚠️ *ShelfLock Alert!* \n\n${parsedMessage}\n\n📦 বর্তমান স্টক: ${product.quantity} টি। \n📅 মেয়াদ শেষের তারিখ: (${formattedDate})`;
+
+//           // ৫. সরাসরি ওনারের হোয়াটসঅ্যাপে মেসেজ পাঠানো
+//           await sendWhatsAppMessage(targetWhatsAppNumber, finalMessage);
+          
+//           // ৬. ডেটাবেজে `lastAlertedDay` আপডেট করা
+//           await prisma.product.update({
+//             where: { id: product.id },
+//             data: { lastAlertedDay: daysRemaining },
+//           });
+//         }
+//       }
+//     }
+//   } catch (error) {
+//     console.error('❌ Error running dynamic expiry rule cron job:', error);
+//   } finally {
+//     await prisma.$disconnect();
+//   }
+// });
+
+
+
 import cron from 'node-cron';
 import { getPrisma } from '../config/prisma.js';
 import { sendWhatsAppMessage } from '../utils/whatsapp.js';
-
 
 cron.schedule('* * * * *', async () => {
   const prisma = getPrisma();
@@ -175,19 +265,26 @@ cron.schedule('* * * * *', async () => {
       // ওনার কনফিগারেশন সেট না করলে ডিফল্ট ইন্টারভাল [30, 7, 3] কাজ করবে
       const intervals = rule?.intervals || [30, 7, 3];
       
-      //  আপনার দেওয়া মেসেজ স্ট্রাকচারটি এখানে ডিফল্ট টেমপ্লেট হিসেবে সেট করা হয়েছে
+      // ডিফল্ট মেসেজ টেমপ্লেট
       const messageTemplate = rule?.customMessage || 
-        "আপনার প্রোডাক্ট *\"{product_name}\"* এর মেয়াদ {days_left} শেষ হতে যাচ্ছে। \n\nঅনুগ্রহ করে দ্রুত প্রয়োজনীয় ব্যবস্থা নিন!";
+        "আপনার প্রোডাক্ট *\"{product_name}\"* এর মেয়াদ {days_left} শেষ হতে যাচ্ছে। \n\nঅনুগ্রহ করে দ্রুত প্রয়োজনীয় ব্যবস্থা নিন!";
       
       let targetWhatsAppNumber = rule?.whatsappNumber || '';
       targetWhatsAppNumber = targetWhatsAppNumber.replace('+', '').trim();
 
-      // হোয়াটসঅ্যাপ নম্বর সেট করা না থাকলে স্টোরটি স্কিপ করবে
+      // হোয়াটসঅ্যাপ নম্বর সেট করা না থাকলে স্টোরটি স্কিপ করবে
       if (!targetWhatsAppNumber) {
         continue;
       }
 
       for (const product of store.products) {
+        
+        // 🛑 জাদুকরী কন্ডিশন: প্রোডাক্টের স্ট্যাটাস যদি Inactive (Unlocked) হয়, তবে কোনো মেসেজ যাবে না
+        if (product.status === 'Inactive') {
+          // console.log(`ℹ️ Skipped: '${product.title}' is Unlocked/Inactive by User. Alert disabled.`);
+          continue; 
+        }
+
         const expiryDate = new Date(product.expiryDate);
         expiryDate.setHours(0, 0, 0, 0);
 
@@ -195,20 +292,20 @@ cron.schedule('* * * * *', async () => {
         const diffTime = expiryDate.getTime() - today.getTime();
         const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        // প্রোডাক্ট অলরেডি এক্সপায়ার হয়ে গেলে স্কিপ
+        // প্রোডাক্ট অলরেডি এক্সপায়ার হয়ে গেলে স্কিপ
         if (daysRemaining <= 0) continue;
 
         // ২. চেক করা: আজকের দিনটি কি ওনারের সিলেক্ট করা ইন্টারভালের মধ্যে আছে?
         if (intervals.includes(daysRemaining)) {
           
-          // 🛡️ ডুপ্লিকেট মেসেজ সেফগার্ড
+          // 🛡️ ডুপ্লিকেট মেসেজ সেফграфии (একই মাইলস্টোনে যেন বারবার মেসেজ না যায়)
           if (product.lastAlertedDay === daysRemaining) {
             continue;
           }
 
-          console.log(`⚠️ Expiry Milestone Match! '${product.title}' has exactly ${daysRemaining} days remaining.`);
+          console.log(`⚠️ Expiry Milestone Match! '${product.title}' is Active/Locked and has exactly ${daysRemaining} days remaining.`);
 
-          // ৩. দিন অনুযায়ী টেক্সট ডাইনামিক করা (১ দিন বাকি থাকলে "আগামীকাল", অন্যথায় "আর মাত্র X দিন")
+          // ৩. দিন অনুযায়ী টেক্সট ডাইনামিক করা (১ দিন বাকি থাকলে "আগামীকাল", অন্যথায় "আর মাত্র X দিন")
           const dayText = daysRemaining === 1 ? "আগামীকাল" : `আর মাত্র ${daysRemaining} দিন পর`;
           const formattedDate = new Date(product.expiryDate).toLocaleDateString('bn-BD');
           
@@ -217,13 +314,13 @@ cron.schedule('* * * * *', async () => {
             .replace(/{product_name}/g, product.title)
             .replace(/{days_left}/g, dayText);
             
-          // ৪. আপনার চাওয়া হুবহু ফরম্যাটে চূড়ান্ত মেসেজ তৈরি (মেসেজ বডি + স্টক + এক্সপায়ারি ডেট)
-          const finalMessage = `⚠️ *ShelfLock Alert!* \n\n${parsedMessage}\n\n📦 বর্তমান স্টক: ${product.quantity} টি। \n📅 মেয়াদ শেষের তারিখ: (${formattedDate})`;
+          // ৪. চূড়ান্ত মেসেজ ফরম্যাট (মেসেজ বডি + স্টক + এক্সপায়ারি ডেট)
+          const finalMessage = `⚠️ *ShelfLock Alert!* \n\n${parsedMessage}\n\n📦 বর্তমান স্টক: ${product.quantity} টি। \n📅 মেয়াদ শেষের তারিখ: (${formattedDate})`;
 
-          // ৫. সরাসরি ওনারের হোয়াটসঅ্যাপে মেসেজ পাঠানো
+          // ৫. সরাসরি ওনারের হোয়াটসঅ্যাপে মেসেজ পাঠানো
           await sendWhatsAppMessage(targetWhatsAppNumber, finalMessage);
           
-          // ৬. ডেটাবেজে `lastAlertedDay` আপডেট করা
+          // ৬. ডেটাবেজে `lastAlertedDay` আপডেট করা যেন এই মাইলস্টোনে আর মেসেজ না যায়
           await prisma.product.update({
             where: { id: product.id },
             data: { lastAlertedDay: daysRemaining },
