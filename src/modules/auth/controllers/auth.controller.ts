@@ -46,4 +46,24 @@ export class AuthController {
       res.status(401).json({ success: false, message: error.message });
     }
   }
+
+  // 🚪 লগআউট কন্ট্রোলার
+  async logout(req: Request, res: Response): Promise<void> {
+    try {
+      // ফ্রন্টএন্ড লেভেল কুকি ক্লিয়ারের ব্যাকআপ হিসেবে সার্ভার সাইড থেকেও ডিলিট করার চেষ্টা করা হচ্ছে
+      res.clearCookie('token', {
+        path: '/'
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'লগআউট সফল হয়েছে!',
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || 'সার্ভার এরর!'
+      });
+    }
+  }
 }
