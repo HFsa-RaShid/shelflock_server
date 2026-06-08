@@ -12,7 +12,7 @@ app.use(
       const allowedOrigins = [
         'http://localhost:5173', // Vite লোকালহোস্ট
         'http://localhost:3000', // Next.js লোকালহোস্ট
-        'https://shelflock-client.vercel.app', // 👈 আপনার আসল ফ্রন্টএন্ডের Vercel লিংক এখানে বসাবেন
+        'https://shelflock-client.vercel.app/admin', // 👈 আপনার আসল ফ্রন্টএন্ডের Vercel লিংক এখানে বসাবেন
       ];
 
       // origin যদি আনডিফাইন্ড হয় (যেমন: Postman বা মোবাইল অ্যাপের রিকোয়েস্ট), তবে অ্যালাউ করবে
