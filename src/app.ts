@@ -4,7 +4,6 @@ import router from './config/routes.js';
 
 const app: Application = express();
 
-// ১. ডাইনামিক CORS কনফিগারেশন (এটিই সব OPTIONS রিকোয়েস্ট একাই হ্যান্ডেল করবে 🚀)
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -25,7 +24,6 @@ app.use(
   })
 );
 
-// 💡 [FIX]: ক্র্যাশ করা app.options এর ফালতু লাইনটি এখান থেকে সম্পূর্ণ মুছে ফেলা হয়েছে!
 
 app.use(express.json());
 
