@@ -1,4 +1,4 @@
-// src/modules/category/interfaces/category.interface.ts
+
 import { Status } from '@prisma/client';
 
 export interface ICreateCategoryInput {

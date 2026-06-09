@@ -1,4 +1,4 @@
-// src/middlewares/auth.middleware.ts
+
 import { Response, NextFunction } from 'express';
 
 import jwt from 'jsonwebtoken';
@@ -11,7 +11,6 @@ export const verifyToken = (req: IAuthRequest, res: Response, next: NextFunction
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string; email: string };
     
-    // এখন আর এরর দিবে না! 😎
     req.merchant = decoded; 
     
     next();

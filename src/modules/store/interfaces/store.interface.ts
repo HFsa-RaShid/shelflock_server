@@ -1,4 +1,4 @@
-// src/modules/store/interfaces/store.interface.ts
+
 export interface ICreateStoreInput {
   name: string;
   phone: string;

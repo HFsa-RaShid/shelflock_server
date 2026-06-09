@@ -1,4 +1,4 @@
-// src/modules/category/controllers/category.controller.ts
+
 import { Request, Response } from 'express';
 import { Status } from '@prisma/client';
 import { CategoryService } from './category.service.js';
@@ -10,7 +10,7 @@ interface AuthenticatedRequest extends Request {
   } & Request['headers'];
 }
 
-// ১. ক্যাটাগরি তৈরি করুন
+
 const createCategory = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const storeId = req.headers['store-id'];
@@ -48,7 +48,7 @@ const createCategory = async (req: AuthenticatedRequest, res: Response): Promise
   }
 };
 
-// ২. সমস্ত ক্যাটাগরি নিয়ে আসুন
+
 const getAllCategories = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const storeId = req.headers['store-id'];
@@ -59,13 +59,13 @@ const getAllCategories = async (req: AuthenticatedRequest, res: Response): Promi
 
     const categories = await CategoryService.getAllCategoriesFromDB(storeId as string);
 
-    // 💡 এখানে 'cat: any' অথবা সুনির্দিষ্ট টাইপ ডিফাইন করে TS7006 এররটি ফিক্স করা হয়েছে
+  
     const formattedData = categories.map((cat: any) => ({
       id: cat.id,
       name: cat.name,
       description: cat.description,
       status: cat.status,
-      itemCount: cat._count?.products || 0, // Optional chaining ব্যবহার করা নিরাপদ
+      itemCount: cat._count?.products || 0, 
       createdAt: cat.createdAt,
       updatedAt: cat.updatedAt,
     }));
@@ -76,13 +76,12 @@ const getAllCategories = async (req: AuthenticatedRequest, res: Response): Promi
   }
 };
 
-// ৩. ক্যাটাগরি স্ট্যাটাস অ্যাক্টিভ/ইনঅ্যাক্টিভ টগল বা এডিট করুন
+
 const toggleCategoryStatus = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { status, name, description } = req.body;
 
-    // যদি শুধু স্ট্যাটাস আপডেট করতে চায় তবে ভ্যালিডেশন
     if (status && status !== Status.Active && status !== Status.Inactive) {
       res.status(400).json({ success: false, message: 'Invalid status type. Use Active or Inactive.' });
       return;
@@ -99,7 +98,7 @@ const toggleCategoryStatus = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// ৪. ক্যাটাগরি ডিলিট করুন
+
 const deleteCategory = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;

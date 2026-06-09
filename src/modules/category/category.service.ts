@@ -1,10 +1,10 @@
-// src/modules/category/services/category.service.ts
+
 
 import { getPrisma } from '../../config/prisma.js';
 import { ICreateCategoryInput, IUpdateCategoryInput } from './category.interface.js';
 
 
-// ১. নতুন ক্যাটাগরি তৈরি
+
 const createCategoryIntoDB = async (data: ICreateCategoryInput) => {
   const prisma = getPrisma();
   return await prisma.category.create({
@@ -12,7 +12,7 @@ const createCategoryIntoDB = async (data: ICreateCategoryInput) => {
   });
 };
 
-// ২. নির্দিষ্ট স্টোরের সব ক্যাটাগরি তুলে আনা (প্রোডাক্ট কাউন্টসহ)
+
 const getAllCategoriesFromDB = async (storeId: string) => {
   const prisma = getPrisma();
   return await prisma.category.findMany({
@@ -30,7 +30,7 @@ const getAllCategoriesFromDB = async (storeId: string) => {
   });
 };
 
-// ৩. ক্যাটাগরি ডাটা বা স্ট্যাটাস আপডেট
+
 const updateCategoryInDB = async (id: string, updateData: IUpdateCategoryInput) => {
   const prisma = getPrisma();
   return await prisma.category.update({
@@ -39,7 +39,7 @@ const updateCategoryInDB = async (id: string, updateData: IUpdateCategoryInput) 
   });
 };
 
-// ৪. ক্যাটাগরি ডিলিট করা
+
 const deleteCategoryFromDB = async (id: string) => {
   const prisma = getPrisma();
   return await prisma.category.delete({

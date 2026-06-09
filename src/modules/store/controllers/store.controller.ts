@@ -1,8 +1,7 @@
-// src/modules/store/controllers/store.controller.ts
 import { Request, Response } from 'express';
 import { StoreService } from '../services/store.service.js';
 
-// ১. স্টোর তৈরি করার কন্ট্রোলার (আপাতত টোকেন ছাড়া টেস্ট করার জন্য)
+
 const createStore = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, phone, merchantId } = req.body;
@@ -29,10 +28,10 @@ const createStore = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// ২. মার্চেন্টের সব স্টোর দেখার কন্ট্রোলার
+
 const getMyStores = async (req: Request, res: Response): Promise<void> => {
   try {
-    // GET রিকোয়েস্টে কোয়েরি অথবা বডি থেকে merchantId নিচ্ছি
+    
     const merchantId = (req.query.merchantId as string) || req.body.merchantId;
 
     if (!merchantId) {
@@ -52,7 +51,7 @@ const getMyStores = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// ৩. স্টোর আপডেট করার কন্ট্রোলার
+
 const updateStore = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -63,7 +62,7 @@ const updateStore = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// ৪. স্টোর ডিলিট করার কন্ট্রোলার
+
 const deleteStore = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
