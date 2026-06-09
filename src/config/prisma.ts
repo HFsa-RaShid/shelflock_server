@@ -4,7 +4,7 @@
 // import { PrismaPg } from '@prisma/adapter-pg';
 // import pg from 'pg';
 
-// const connectionString = process.env.DATABASE_URL || "postgresql://postgres:hafsaAdsfixter@3@localhost:5432/shelflock?schema=public";
+// const connectionString = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_2N6heawmDRMJ@ep-noisy-wind-aphi50bq.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require";
 
 // // ইউআরএলটি ঠিকঠাক পাচ্ছে কিনা তা নিশ্চিত করার জন্য একটি ছোট সেফটি চেক
 // if (!connectionString) {
@@ -24,18 +24,17 @@
 //   return prisma;
 // };
 
-
-
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import pg from 'pg';
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
 
 // আপনার আসল লাইভ ডাটাবেজ লিংক
-const LIVE_URL = "postgresql://postgres:hafsaAdsfixter@3@localhost:5432/shelflock?schema=public";
+const LIVE_URL =
+  "postgresql://neondb_owner:npg_2N6heawmDRMJ@ep-noisy-wind-aphi50bq.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require";
 
-const pool = new pg.Pool({ 
+const pool = new pg.Pool({
   connectionString: LIVE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false },
 });
 
 const adapter = new PrismaPg(pool);
