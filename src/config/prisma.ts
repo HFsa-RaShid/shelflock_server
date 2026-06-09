@@ -30,6 +30,7 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 
+// আপনার আসল লাইভ ডাটাবেজ লিংক
 const LIVE_URL = "postgresql://postgres:hafsaAdsfixter@3@localhost:5432/shelflock?schema=public";
 
 const pool = new pg.Pool({ 
@@ -39,9 +40,12 @@ const pool = new pg.Pool({
 
 const adapter = new PrismaPg(pool);
 
-// জোর করে প্রতিবার নতুন রানটাইমে লাইভ অ্যাডাপ্টার পুশ করা হচ্ছে
-export const prisma = new PrismaClient({ adapter });
+// 🚨 [ম্যাজিক লাইন]: গ্লোবাল মেমোরি বা আগের সব অবজেক্ট পুরোপুরি ডিলিট করে ফ্রেশ ক্লায়েন্ট তৈরি
+const databaseClient = new PrismaClient({ adapter });
 
+export const prisma = databaseClient;
+
+// 🎯 getPrisma() ফাংশন কল হলে যেন কোনোভাবেই ডিফল্ট ক্লায়েন্ট রিটার্ন না করে
 export const getPrisma = () => {
-  return prisma;
+  return databaseClient;
 };
